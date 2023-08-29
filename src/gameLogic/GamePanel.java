@@ -16,6 +16,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private CheckCollision checkCollision;
     private HandleCollision handleCollision;
+
+    private MyActionListener myActionListener;
     private Spaceship spaceship;
     private static final int SPACESHIP_WIDTH = 60;
     private static final int SPACESHIP_HEIGHT = 50;
@@ -36,8 +38,8 @@ public class GamePanel extends JPanel implements ActionListener {
     private LifeCount lifeCount;
     private GamePlay gamePlay;
     private boolean running;
-    private boolean leftKeyPressed = false;
-    private boolean rightKeyPressed = false;
+    //private boolean leftKeyPressed = false;
+    //private boolean rightKeyPressed = false;
     private String direction = "right";
     long prevWhen = 0;
     float timeUntilNextSpaceshipBullet = 0;
@@ -50,9 +52,10 @@ public class GamePanel extends JPanel implements ActionListener {
     public GamePanel() {
         checkCollision = new CheckCollision();
         handleCollision = new HandleCollision();
+        myActionListener = new MyActionListener(this);
         this.setFocusable(true);
         this.setPreferredSize(SCREEN_DIMENSIONS);
-        this.addKeyListener(new MyActionsListener());
+        this.addKeyListener(myActionListener);
         startGame();
     }
 
@@ -102,6 +105,10 @@ public class GamePanel extends JPanel implements ActionListener {
         if (!running) {
             gamePlay.draw(g, lifeCount.getLives() == 0);
         }
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 
     public void createSpaceship() {
@@ -220,11 +227,10 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void moveSpaceship() {
         int marginEdge = 20;
-        if (rightKeyPressed) {
+        if (myActionListener.isRightKeyPressed()) {
             spaceship.moveRight(marginEdge);
-        } else if (leftKeyPressed) {
+        } else if (myActionListener.isLeftKeyPressed()) {
             spaceship.moveLeft(marginEdge);
-
         }
     }
 
@@ -294,7 +300,7 @@ public class GamePanel extends JPanel implements ActionListener {
         repaint();
     }
 
-    public class MyActionsListener extends KeyAdapter {
+    /*public class MyActionsListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
             if (running) {
@@ -319,5 +325,5 @@ public class GamePanel extends JPanel implements ActionListener {
                 case KeyEvent.VK_LEFT -> leftKeyPressed = false;
             }
         }
-    }
+    }*/
 }
