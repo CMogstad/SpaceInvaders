@@ -18,6 +18,8 @@ public class GamePanel extends JPanel implements ActionListener {
     private HandleCollision handleCollision;
 
     private MyActionListener myActionListener;
+
+    private Movement movement;
     private Spaceship spaceship;
     private static final int SPACESHIP_WIDTH = 60;
     private static final int SPACESHIP_HEIGHT = 50;
@@ -38,9 +40,6 @@ public class GamePanel extends JPanel implements ActionListener {
     private LifeCount lifeCount;
     private GamePlay gamePlay;
     private boolean running;
-    //private boolean leftKeyPressed = false;
-    //private boolean rightKeyPressed = false;
-    private String direction = "right";
     long prevWhen = 0;
     float timeUntilNextSpaceshipBullet = 0;
     float timeUntilNextEnemyBullet = 0;
@@ -57,6 +56,7 @@ public class GamePanel extends JPanel implements ActionListener {
         this.setPreferredSize(SCREEN_DIMENSIONS);
         this.addKeyListener(myActionListener);
         startGame();
+
     }
 
     public void startGame() {
@@ -70,6 +70,7 @@ public class GamePanel extends JPanel implements ActionListener {
         lifeCount = new LifeCount();
         gamePlay = new GamePlay(SCREEN_WIDTH, SCREEN_HEIGHT);
         score = new Score(SCREEN_WIDTH, SCREEN_HEIGHT);
+        movement = new Movement(spaceship, enemies, ENEMY_WIDTH, SCREEN_WIDTH, myActionListener);
         timer = new Timer(10, this);
         timer.start();
     }
@@ -170,8 +171,6 @@ public class GamePanel extends JPanel implements ActionListener {
         boolean gameOver = lifeCount.looseLife();
         if (gameOver) {
             gameOver();
-        } else {
-            createSpaceship();
         }
     }
 
@@ -179,61 +178,6 @@ public class GamePanel extends JPanel implements ActionListener {
         running = false;
         timer.stop();
     }
-
-    private void moveEnemies() {
-        switch (direction) {
-            case "right" -> moveEnemiesRight();
-            case "left" -> moveEnemiesLeft();
-            case "down" -> moveEnemiesDown();
-        }
-
-        determineNextDirection();
-    }
-
-    public void moveEnemiesRight() {
-        for (Enemy enemy : enemies) {
-            enemy.x += 10;
-        }
-    }
-
-    public void moveEnemiesLeft() {
-        for (Enemy enemy : enemies) {
-            enemy.x -= 10;
-        }
-    }
-
-    public void moveEnemiesDown() {
-        for (Enemy enemy : enemies) {
-            enemy.y += 10;
-        }
-    }
-
-    public void determineNextDirection() {
-        int marginEdge = 20;
-
-        for (Enemy enemy : enemies) {
-            if (!direction.equals("down") && (enemy.x + ENEMY_WIDTH + marginEdge >= SCREEN_WIDTH || enemy.x - marginEdge <= 0)) {
-                direction = "down";
-                break;
-            } else if (enemy.x + ENEMY_WIDTH + marginEdge >= SCREEN_WIDTH) {
-                direction = "left";
-                break;
-            } else if (enemy.x - marginEdge <= 0) {
-                direction = "right";
-                break;
-            }
-        }
-    }
-
-    public void moveSpaceship() {
-        int marginEdge = 20;
-        if (myActionListener.isRightKeyPressed()) {
-            spaceship.moveRight(marginEdge);
-        } else if (myActionListener.isLeftKeyPressed()) {
-            spaceship.moveLeft(marginEdge);
-        }
-    }
-
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -253,7 +197,7 @@ public class GamePanel extends JPanel implements ActionListener {
             }
 
             if (timeUntilNextEnemyMovement >= delayEnemyMovement) {
-                moveEnemies();
+                movement.moveEnemies();
                 timeUntilNextEnemyMovement = 0;
             }
 
@@ -265,7 +209,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 enemyBullet.moveY();
             }
 
-            moveSpaceship();
+            movement.moveSpaceship();
 
             IndexPair indexSpaceshipBulletEnemy = checkCollision.getCollisionIndexesSpaceshipBulletAndEnemy(spaceshipBullets, enemies);
             {
@@ -299,31 +243,4 @@ public class GamePanel extends JPanel implements ActionListener {
         }
         repaint();
     }
-
-    /*public class MyActionsListener extends KeyAdapter {
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (running) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_RIGHT -> rightKeyPressed = true;
-                    case KeyEvent.VK_LEFT -> leftKeyPressed = true;
-                    case KeyEvent.VK_SPACE -> createBullet();
-                }
-            }
-
-            if (!running) {
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    startGame();
-                }
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_RIGHT -> rightKeyPressed = false;
-                case KeyEvent.VK_LEFT -> leftKeyPressed = false;
-            }
-        }
-    }*/
 }
