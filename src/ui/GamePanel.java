@@ -1,6 +1,7 @@
-package gameLogic;
+package ui;
 
 import entities.*;
+import gameLogic.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,6 +45,7 @@ public class GamePanel extends JPanel implements ActionListener {
         gameLifecycle = new GameLifecycle(this);
         myActionListener = new MyActionListener(gameLifecycle);
         this.addKeyListener(myActionListener);
+        instantiateAllUIObjects();
         gameLifecycle.startGame();
     }
 

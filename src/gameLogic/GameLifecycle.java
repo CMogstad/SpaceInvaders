@@ -1,5 +1,7 @@
 package gameLogic;
 
+import ui.GamePanel;
+
 import javax.swing.*;
 
 public class GameLifecycle {
