@@ -6,52 +6,41 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
 
     private static final int SCREEN_WIDTH = 1000;
     private static final int SCREEN_HEIGHT = 600;
     private static final Dimension SCREEN_DIMENSIONS = new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT);
-
     private CheckCollision checkCollision;
     private HandleCollision handleCollision;
-
     private MyActionListener myActionListener;
-
+    private EntityCreation entityCreation;
     private Movement movement;
     private Spaceship spaceship;
-    private static final int SPACESHIP_WIDTH = 60;
-    private static final int SPACESHIP_HEIGHT = 50;
     private ArrayList<SpaceshipBullet> spaceshipBullets;
-    private static final int SPACESHIP_BULLET_WIDTH = 10;
-    private static final int SPACESHIP_BULLET_HEIGHT = 10;
     private ArrayList<Enemy> enemies;
-    private static final int ENEMY_WIDTH = 40;
-    private static final int ENEMY_HEIGHT = 40;
     private ArrayList<EnemyBullet> enemyBullets;
-    private static final int ENEMY_BULLET_WIDTH = 10;
-    private static final int ENEMY_BULLET_HEIGHT = 10;
 
     private ArrayList<Wall> walls;
     private Timer timer;
-    private Random randomEnemy;
     private Score score;
     private LifeCount lifeCount;
     private GamePlay gamePlay;
     private boolean running;
     long prevWhen = 0;
-    float timeUntilNextSpaceshipBullet = 0;
+    private float timeUntilNextSpaceshipBullet = 0;
+    private float delaySpaceshipBullets = 0.5f;
     float timeUntilNextEnemyBullet = 0;
     float timeUntilNextEnemyMovement = 0;
-    float delaySpaceshipBullets = 0.5f;
     float delayEnemyBullet = 1.5f;
     float delayEnemyMovement = 1f;
 
     public GamePanel() {
         checkCollision = new CheckCollision();
         handleCollision = new HandleCollision();
-        myActionListener = new MyActionListener(this);
+        entityCreation = new EntityCreation();
+        myActionListener = new MyActionListener(this, entityCreation);
         this.setFocusable(true);
         this.setPreferredSize(SCREEN_DIMENSIONS);
         this.addKeyListener(myActionListener);
@@ -61,16 +50,16 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void startGame() {
         running = true;
-        createSpaceship();
+        spaceship = entityCreation.createSpaceship(SCREEN_WIDTH, SCREEN_HEIGHT);
         spaceshipBullets = new ArrayList<>();
-        createEnemies();
-        createWalls();
+        enemies = entityCreation.createEnemies();
+        walls = entityCreation.createWalls(SCREEN_WIDTH, SCREEN_HEIGHT);
         enemyBullets = new ArrayList<>();
-        randomEnemy = new Random();
+        //randomEnemy = new Random();
         lifeCount = new LifeCount();
         gamePlay = new GamePlay(SCREEN_WIDTH, SCREEN_HEIGHT);
         score = new Score(SCREEN_WIDTH, SCREEN_HEIGHT);
-        movement = new Movement(spaceship, enemies, ENEMY_WIDTH, SCREEN_WIDTH, myActionListener);
+        movement = new Movement(spaceship, enemies, EntityCreation.getEnemyWidth(), SCREEN_WIDTH, myActionListener);
         timer = new Timer(10, this);
         timer.start();
     }
@@ -112,61 +101,6 @@ public class GamePanel extends JPanel implements ActionListener {
         return running;
     }
 
-    public void createSpaceship() {
-        spaceship = new Spaceship((SCREEN_WIDTH / 2 - SPACESHIP_WIDTH), (SCREEN_HEIGHT - 80), SPACESHIP_WIDTH, SPACESHIP_HEIGHT, SCREEN_WIDTH);
-    }
-
-    public void createBullet() {
-        if (timeUntilNextSpaceshipBullet >= delaySpaceshipBullets) {
-            int bulletX = (int) spaceship.getX() + SPACESHIP_WIDTH / 2 - SPACESHIP_BULLET_WIDTH / 2;
-            int bulletY = (int) spaceship.getY();
-            SpaceshipBullet spaceshipBullet = new SpaceshipBullet(bulletX, bulletY, SPACESHIP_BULLET_WIDTH, SPACESHIP_BULLET_HEIGHT);
-            spaceshipBullets.add(spaceshipBullet);
-            timeUntilNextSpaceshipBullet = 0;
-        }
-    }
-
-    public void createEnemies() {
-        enemies = new ArrayList<>();
-        int enemyX = 130;
-        int enemyY = 100;
-        for (int i = 0; i < 10; i++) {
-            Enemy enemy = new Enemy(enemyX + 80 * i, enemyY, ENEMY_WIDTH, ENEMY_HEIGHT);
-            enemies.add(enemy);
-        }
-
-        enemyY = enemyY + 80;
-        for (int i = 0; i < 10; i++) {
-            Enemy enemy = new Enemy(enemyX + 80 * i, enemyY, ENEMY_WIDTH, ENEMY_HEIGHT);
-            enemies.add(enemy);
-        }
-
-
-        enemyY = enemyY + 80;
-        for (int i = 0; i < 10; i++) {
-            Enemy enemy = new Enemy(enemyX + 80 * i, enemyY, ENEMY_WIDTH, ENEMY_HEIGHT);
-            enemies.add(enemy);
-        }
-    }
-
-    public void createWalls() {
-        walls = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            Wall wall = new Wall(SCREEN_WIDTH / 9 * (2 * i) + SCREEN_WIDTH / 9, SCREEN_HEIGHT - 180, 80, 30);
-            walls.add(wall);
-        }
-    }
-
-    public void shootEnemyBullet() {
-        if (!enemies.isEmpty()) {
-            int randomEnemyIndex = randomEnemy.nextInt(enemies.size());
-            int bulletX = enemies.get(randomEnemyIndex).x + ENEMY_WIDTH / 2 - ENEMY_BULLET_WIDTH / 2;
-            int bulletY = enemies.get(randomEnemyIndex).y + ENEMY_HEIGHT;
-            EnemyBullet enemyBullet = new EnemyBullet(bulletX, bulletY, ENEMY_BULLET_WIDTH, ENEMY_BULLET_HEIGHT);
-            enemyBullets.add(enemyBullet);
-        }
-    }
-
     private void handleSpaceshipHit() {
         boolean gameOver = lifeCount.looseLife();
         if (gameOver) {
@@ -191,8 +125,13 @@ public class GamePanel extends JPanel implements ActionListener {
             timeUntilNextEnemyBullet += deltaSeconds;
             timeUntilNextEnemyMovement += deltaSeconds;
 
+            if(timeUntilNextSpaceshipBullet >= delaySpaceshipBullets && myActionListener.isSpaceBarPressed()){
+                entityCreation.shootSpaceshipBullet(spaceship, spaceshipBullets);
+                timeUntilNextSpaceshipBullet = 0;
+            }
+
             if (timeUntilNextEnemyBullet >= delayEnemyBullet) {
-                shootEnemyBullet();
+                entityCreation.shootEnemyBullet(enemies, enemyBullets);
                 timeUntilNextEnemyBullet = 0;
             }
 
