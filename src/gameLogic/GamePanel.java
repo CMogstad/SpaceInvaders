@@ -157,74 +157,6 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    /*public void checkCollisionBetweenBulletAndEnemy() {
-        for (int i = 0; i < spaceshipBullets.size(); i++) {
-            for (int j = 0; j < enemies.size(); j++) {
-                if (spaceshipBullets.get(i).intersects(enemies.get(j))) {
-                    enemies.remove(enemies.get(j));
-                    score.increaseScore();
-                    spaceshipBullets.remove(spaceshipBullets.get(i));
-                    if (enemies.isEmpty()) {
-                        gameOver();
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    public void checkCollisionBetweenBulletAndSpaceship() {
-        for (int i = 0; i < enemyBullets.size(); i++) {
-            if (enemyBullets.get(i).intersects(spaceship)) {
-                handleSpaceshipHit();
-                enemyBullets.clear();
-                break;
-            }
-        }
-    }
-
-    private void checkCollisionBetweenSpaceShipAndEnemy() {
-        for (int i = 0; i < enemies.size(); i++) {
-            if (enemies.get(i).intersects(spaceship)) {
-                enemies.remove(enemies.get(i));
-                handleSpaceshipHit();
-                break;
-            }
-        }
-    }
-
-    private void checkCollisionBetweenWallAndEnemyBullet() {
-        for (int i = 0; i < walls.size(); i++) {
-
-            for (EnemyBullet enemyBullet : enemyBullets) {
-                if (walls.get(i).intersects(enemyBullet)) {
-                    walls.get(i).hit();
-                    enemyBullets.remove(enemyBullet);
-                    if (walls.get(i).getRemainingHits() == 0) {
-                        walls.remove(walls.get(i));
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    private void checkCollisionBetweenWallAndSpaceshipBullet() {
-        for (int i = 0; i < walls.size(); i++) {
-
-            for (SpaceshipBullet spaceshipBullet : spaceshipBullets) {
-                if (walls.get(i).intersects(spaceshipBullet)) {
-                    walls.get(i).hit();
-                    spaceshipBullets.remove(spaceshipBullet);
-                    if (walls.get(i).getRemainingHits() == 0) {
-                        walls.remove(walls.get(i));
-                    }
-                    break;
-                }
-            }
-        }
-    }*/
-
     private void handleSpaceshipHit() {
         boolean gameOver = lifeCount.looseLife();
         if (gameOver) {
@@ -334,6 +266,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 }
             }
             if(checkCollision.checkCollisionBetweenEnemyBulletsAndSpaceship(enemyBullets, spaceship)){
+                enemyBullets.clear();
                 handleSpaceshipHit();
             }
 
@@ -341,9 +274,9 @@ public class GamePanel extends JPanel implements ActionListener {
                 handleSpaceshipHit();
             }
 
-            checkCollision.checkCollisionBetweenWallsAndEnemyBullet(walls, enemyBullets);
+            checkCollision.checkCollisionBetweenWallsAndBullets(walls, enemyBullets);
 
-            checkCollision.checkCollisionBetweenWallsAndSpaceshipBullets(walls, spaceshipBullets);
+            checkCollision.checkCollisionBetweenWallsAndBullets(walls, spaceshipBullets);
         }
 
 

@@ -2,6 +2,7 @@ package gameLogic;
 
 import entities.*;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 public class CheckCollision {
@@ -20,9 +21,8 @@ public class CheckCollision {
     }
 
     public boolean checkCollisionBetweenEnemyBulletsAndSpaceship(ArrayList<EnemyBullet> enemyBullets, Spaceship spaceship) {
-        for (int i = 0; i < enemyBullets.size(); i++) {
-            if (enemyBullets.get(i).intersects(spaceship)) {
-                enemyBullets.clear();
+        for (EnemyBullet enemyBullet : enemyBullets) {
+            if (enemyBullet.intersects(spaceship)) {
                 return true;
             }
         }
@@ -39,34 +39,17 @@ public class CheckCollision {
         return false;
     }
 
-    public boolean checkCollisionBetweenWallsAndEnemyBullet(ArrayList<Wall> walls, ArrayList<EnemyBullet> enemyBullets) {
+    public boolean checkCollisionBetweenWallsAndBullets(ArrayList<Wall> walls, ArrayList<? extends Bullet> bullets) {
         for (int i = 0; i < walls.size(); i++) {
 
-            for (EnemyBullet enemyBullet : enemyBullets) {
-                if (walls.get(i).intersects(enemyBullet)) {
+            for (Bullet bullet : bullets) {
+                if (walls.get(i).intersects((Rectangle) bullet)) {
                     walls.get(i).hit();
-                    enemyBullets.remove(enemyBullet);
+                    bullets.remove(bullet);
                     if (walls.get(i).getRemainingHits() == 0) {
                         walls.remove(walls.get(i));
                     }
                     return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean checkCollisionBetweenWallsAndSpaceshipBullets(ArrayList<Wall> walls, ArrayList<SpaceshipBullet> spaceshipBullets) {
-        for (int i = 0; i < walls.size(); i++) {
-
-            for (SpaceshipBullet spaceshipBullet : spaceshipBullets) {
-                if (walls.get(i).intersects(spaceshipBullet)) {
-                    walls.get(i).hit();
-                    spaceshipBullets.remove(spaceshipBullet);
-                    if (walls.get(i).getRemainingHits() == 0) {
-                        walls.remove(walls.get(i));
-                    }
-                   return true;
                 }
             }
         }

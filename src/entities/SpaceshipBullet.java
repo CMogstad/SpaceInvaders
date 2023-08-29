@@ -2,7 +2,7 @@ package entities;
 
 import java.awt.*;
 
-public class SpaceshipBullet extends Rectangle {
+public class SpaceshipBullet extends Rectangle implements Bullet{
 
     public SpaceshipBullet(int x, int y, int width, int height) {
         super(x, y, width, height);
