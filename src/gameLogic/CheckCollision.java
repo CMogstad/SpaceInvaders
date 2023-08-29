@@ -7,17 +7,17 @@ import java.util.ArrayList;
 
 public class CheckCollision {
 
-    public boolean checkCollisionBetweenSpaceshipBulletAndEnemy(ArrayList<SpaceshipBullet> spaceshipBullets, ArrayList<Enemy> enemies) {
+
+
+    public IndexPair checkCollisionBetweenSpaceshipBulletAndEnemy(ArrayList<SpaceshipBullet> spaceshipBullets, ArrayList<Enemy> enemies) {
         for (int i = 0; i < spaceshipBullets.size(); i++) {
             for (int j = 0; j < enemies.size(); j++) {
                 if (spaceshipBullets.get(i).intersects(enemies.get(j))) {
-                    enemies.remove(enemies.get(j));
-                    spaceshipBullets.remove(spaceshipBullets.get(i));
-                    return true;
+                    return new IndexPair(i, j);
                 }
             }
         }
-        return false;
+        return null;
     }
 
     public boolean checkCollisionBetweenEnemyBulletsAndSpaceship(ArrayList<EnemyBullet> enemyBullets, Spaceship spaceship) {
@@ -39,20 +39,14 @@ public class CheckCollision {
         return false;
     }
 
-    public boolean checkCollisionBetweenWallsAndBullets(ArrayList<Wall> walls, ArrayList<? extends Bullet> bullets) {
+    public IndexPair checkCollisionBetweenWallsAndBullets(ArrayList<Wall> walls, ArrayList<? extends Bullet> bullets) {
         for (int i = 0; i < walls.size(); i++) {
-
-            for (Bullet bullet : bullets) {
-                if (walls.get(i).intersects((Rectangle) bullet)) {
-                    walls.get(i).hit();
-                    bullets.remove(bullet);
-                    if (walls.get(i).getRemainingHits() == 0) {
-                        walls.remove(walls.get(i));
-                    }
-                    return true;
+            for (int j = 0; j < bullets.size(); j++) {
+                if (walls.get(i).intersects((Rectangle) bullets.get(j))) {
+                    return new IndexPair(i, j);
                 }
             }
         }
-        return false;
+        return null;
     }
 }

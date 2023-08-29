@@ -259,28 +259,49 @@ public class GamePanel extends JPanel implements ActionListener {
 
             moveSpaceship();
 
-            if (checkCollision.checkCollisionBetweenSpaceshipBulletAndEnemy(spaceshipBullets, enemies)) {
-                score.increaseScore();
-                if (enemies.isEmpty()) {
-                    gameOver();
+            IndexPair indexSpaceshipBulletEnemy = checkCollision.checkCollisionBetweenSpaceshipBulletAndEnemy(spaceshipBullets, enemies);
+            {
+                if (indexSpaceshipBulletEnemy != null) {
+                    handleCollisionBetweenSpaceshipBulletAndEnemy(indexSpaceshipBulletEnemy);
                 }
             }
-            if(checkCollision.checkCollisionBetweenEnemyBulletsAndSpaceship(enemyBullets, spaceship)){
+
+            if (checkCollision.checkCollisionBetweenEnemyBulletsAndSpaceship(enemyBullets, spaceship)) {
                 enemyBullets.clear();
                 handleSpaceshipHit();
             }
 
-            if(checkCollision.checkCollisionBetweenSpaceShipAndEnemies(spaceship, enemies)){
+            if (checkCollision.checkCollisionBetweenSpaceShipAndEnemies(spaceship, enemies)) {
                 handleSpaceshipHit();
             }
 
-            checkCollision.checkCollisionBetweenWallsAndBullets(walls, enemyBullets);
+            IndexPair indexWallEnemyBullet = checkCollision.checkCollisionBetweenWallsAndBullets(walls, enemyBullets);
+            if (indexWallEnemyBullet != null) {
+                handleCollisionBetweenWallsAndEnemyBullets(indexWallEnemyBullet);
+            }
 
             checkCollision.checkCollisionBetweenWallsAndBullets(walls, spaceshipBullets);
         }
 
 
         repaint();
+    }
+
+    public void handleCollisionBetweenWallsAndEnemyBullets(IndexPair indexWallEnemyBullet){
+        walls.get(indexWallEnemyBullet.getFirst()).hit();
+        enemyBullets.remove(enemyBullets.get(indexWallEnemyBullet.getSecond()));
+        if (walls.get(indexWallEnemyBullet.getFirst()).getRemainingHits() == 0) {
+            walls.remove(walls.get(indexWallEnemyBullet.getFirst()));
+        }
+    }
+
+    public void handleCollisionBetweenSpaceshipBulletAndEnemy(IndexPair indexSpaceshipBulletEnemy) {
+        score.increaseScore();
+        spaceshipBullets.remove(spaceshipBullets.get(indexSpaceshipBulletEnemy.getFirst()));
+        enemies.remove(enemies.get(indexSpaceshipBulletEnemy.getSecond()));
+        if (enemies.isEmpty()) {
+            gameOver();
+        }
     }
 
     public class MyActionsListener extends KeyAdapter {
