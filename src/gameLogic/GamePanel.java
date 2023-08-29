@@ -1,3 +1,5 @@
+package gameLogic;
+
 import entities.*;
 
 import javax.swing.*;
@@ -11,6 +13,8 @@ public class GamePanel extends JPanel implements ActionListener {
     private static final int SCREEN_WIDTH = 1000;
     private static final int SCREEN_HEIGHT = 600;
     private static final Dimension SCREEN_DIMENSIONS = new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    private CheckCollision checkCollision;
     private Spaceship spaceship;
     private static final int SPACESHIP_WIDTH = 60;
     private static final int SPACESHIP_HEIGHT = 50;
@@ -43,6 +47,7 @@ public class GamePanel extends JPanel implements ActionListener {
     float delayEnemyMovement = 1f;
 
     public GamePanel() {
+        checkCollision = new CheckCollision();
         this.setFocusable(true);
         this.setPreferredSize(SCREEN_DIMENSIONS);
         this.addKeyListener(new MyActionsListener());
@@ -152,7 +157,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    public void checkCollisionBetweenBulletAndEnemy() {
+    /*public void checkCollisionBetweenBulletAndEnemy() {
         for (int i = 0; i < spaceshipBullets.size(); i++) {
             for (int j = 0; j < enemies.size(); j++) {
                 if (spaceshipBullets.get(i).intersects(enemies.get(j))) {
@@ -218,7 +223,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 }
             }
         }
-    }
+    }*/
 
     private void handleSpaceshipHit() {
         boolean gameOver = lifeCount.looseLife();
@@ -321,11 +326,24 @@ public class GamePanel extends JPanel implements ActionListener {
             }
 
             moveSpaceship();
-            checkCollisionBetweenBulletAndEnemy();
-            checkCollisionBetweenBulletAndSpaceship();
-            checkCollisionBetweenSpaceShipAndEnemy();
-            checkCollisionBetweenWallAndEnemyBullet();
-            checkCollisionBetweenWallAndSpaceshipBullet();
+
+            if (checkCollision.checkCollisionBetweenSpaceshipBulletAndEnemy(spaceshipBullets, enemies)) {
+                score.increaseScore();
+                if (enemies.isEmpty()) {
+                    gameOver();
+                }
+            }
+            if(checkCollision.checkCollisionBetweenEnemyBulletsAndSpaceship(enemyBullets, spaceship)){
+                handleSpaceshipHit();
+            }
+
+            if(checkCollision.checkCollisionBetweenSpaceShipAndEnemies(spaceship, enemies)){
+                handleSpaceshipHit();
+            }
+
+            checkCollision.checkCollisionBetweenWallsAndEnemyBullet(walls, enemyBullets);
+
+            checkCollision.checkCollisionBetweenWallsAndSpaceshipBullets(walls, spaceshipBullets);
         }
 
 
