@@ -15,6 +15,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private static final Dimension SCREEN_DIMENSIONS = new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     private CheckCollision checkCollision;
+    private HandleCollision handleCollision;
     private Spaceship spaceship;
     private static final int SPACESHIP_WIDTH = 60;
     private static final int SPACESHIP_HEIGHT = 50;
@@ -48,6 +49,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public GamePanel() {
         checkCollision = new CheckCollision();
+        handleCollision = new HandleCollision();
         this.setFocusable(true);
         this.setPreferredSize(SCREEN_DIMENSIONS);
         this.addKeyListener(new MyActionsListener());
@@ -259,10 +261,14 @@ public class GamePanel extends JPanel implements ActionListener {
 
             moveSpaceship();
 
-            IndexPair indexSpaceshipBulletEnemy = checkCollision.checkCollisionBetweenSpaceshipBulletAndEnemy(spaceshipBullets, enemies);
+            IndexPair indexSpaceshipBulletEnemy = checkCollision.getCollisionIndexesSpaceshipBulletAndEnemy(spaceshipBullets, enemies);
             {
                 if (indexSpaceshipBulletEnemy != null) {
-                    handleCollisionBetweenSpaceshipBulletAndEnemy(indexSpaceshipBulletEnemy);
+                    score.increaseScore(); //TODO: Keep this here and not in HandleCollision?
+                    handleCollision.collideSpaceshipBulletAndEnemy(spaceshipBullets, enemies, indexSpaceshipBulletEnemy);
+                    if (enemies.isEmpty()) {
+                        gameOver();
+                    }
                 }
             }
 
@@ -275,44 +281,17 @@ public class GamePanel extends JPanel implements ActionListener {
                 handleSpaceshipHit();
             }
 
-            IndexPair indexWallEnemyBullet = checkCollision.checkCollisionBetweenWallsAndBullets(walls, enemyBullets);
+            IndexPair indexWallEnemyBullet = checkCollision.checkCollisionIndexesWallsAndBullets(walls, enemyBullets);
             if (indexWallEnemyBullet != null) {
-                handleCollisionBetweenWallsAndEnemyBullets(indexWallEnemyBullet);
+                handleCollision.collideWallsAndBullets(walls, enemyBullets, indexWallEnemyBullet);
             }
 
-            IndexPair indexWallSpaceshipBullet = checkCollision.checkCollisionBetweenWallsAndBullets(walls, spaceshipBullets);
+            IndexPair indexWallSpaceshipBullet = checkCollision.checkCollisionIndexesWallsAndBullets(walls, spaceshipBullets);
             if (indexWallSpaceshipBullet != null) {
-                handleCollisionBetweenWallsAndSpaceshipBullets(indexWallSpaceshipBullet);
+                handleCollision.collideWallsAndBullets(walls, spaceshipBullets, indexWallSpaceshipBullet);
             }
         }
-
-
         repaint();
-    }
-
-    public void handleCollisionBetweenWallsAndEnemyBullets(IndexPair indexWallEnemyBullet) {
-        walls.get(indexWallEnemyBullet.getFirst()).hit();
-        enemyBullets.remove(enemyBullets.get(indexWallEnemyBullet.getSecond()));
-        if (walls.get(indexWallEnemyBullet.getFirst()).getRemainingHits() == 0) {
-            walls.remove(walls.get(indexWallEnemyBullet.getFirst()));
-        }
-    }
-
-    public void handleCollisionBetweenWallsAndSpaceshipBullets(IndexPair indexWallSpaceshipBullet) {
-        walls.get(indexWallSpaceshipBullet.getFirst()).hit();
-        spaceshipBullets.remove(spaceshipBullets.get(indexWallSpaceshipBullet.getSecond()));
-        if (walls.get(indexWallSpaceshipBullet.getFirst()).getRemainingHits() == 0) {
-            walls.remove(walls.get(indexWallSpaceshipBullet.getFirst()));
-        }
-    }
-
-    public void handleCollisionBetweenSpaceshipBulletAndEnemy(IndexPair indexSpaceshipBulletEnemy) {
-        score.increaseScore();
-        spaceshipBullets.remove(spaceshipBullets.get(indexSpaceshipBulletEnemy.getFirst()));
-        enemies.remove(enemies.get(indexSpaceshipBulletEnemy.getSecond()));
-        if (enemies.isEmpty()) {
-            gameOver();
-        }
     }
 
     public class MyActionsListener extends KeyAdapter {
@@ -331,8 +310,6 @@ public class GamePanel extends JPanel implements ActionListener {
                     startGame();
                 }
             }
-
-
         }
 
         @Override

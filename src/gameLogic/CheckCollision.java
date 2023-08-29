@@ -9,7 +9,7 @@ public class CheckCollision {
 
 
 
-    public IndexPair checkCollisionBetweenSpaceshipBulletAndEnemy(ArrayList<SpaceshipBullet> spaceshipBullets, ArrayList<Enemy> enemies) {
+    public IndexPair getCollisionIndexesSpaceshipBulletAndEnemy(ArrayList<SpaceshipBullet> spaceshipBullets, ArrayList<Enemy> enemies) {
         for (int i = 0; i < spaceshipBullets.size(); i++) {
             for (int j = 0; j < enemies.size(); j++) {
                 if (spaceshipBullets.get(i).intersects(enemies.get(j))) {
@@ -39,7 +39,7 @@ public class CheckCollision {
         return false;
     }
 
-    public IndexPair checkCollisionBetweenWallsAndBullets(ArrayList<Wall> walls, ArrayList<? extends Bullet> bullets) {
+    public IndexPair checkCollisionIndexesWallsAndBullets(ArrayList<Wall> walls, ArrayList<? extends Bullet> bullets) {
         for (int i = 0; i < walls.size(); i++) {
             for (int j = 0; j < bullets.size(); j++) {
                 if (walls.get(i).intersects((Rectangle) bullets.get(j))) {
