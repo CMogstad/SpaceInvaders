@@ -16,18 +16,16 @@ public class GamePanel extends JPanel implements ActionListener {
     private HandleCollision handleCollision;
     private MyActionListener myActionListener;
     private EntityCreation entityCreation;
+    private GameLifecycle gameLifecycle;
     private Movement movement;
     private Spaceship spaceship;
     private ArrayList<SpaceshipBullet> spaceshipBullets;
     private ArrayList<Enemy> enemies;
     private ArrayList<EnemyBullet> enemyBullets;
-
     private ArrayList<Wall> walls;
-    private Timer timer;
     private Score score;
     private LifeCount lifeCount;
-    private GamePlay gamePlay;
-    private boolean running;
+    private TextBox textBox;
     long prevWhen = 0;
     private float timeUntilNextSpaceshipBullet = 0;
     private float delaySpaceshipBullets = 0.5f;
@@ -40,28 +38,25 @@ public class GamePanel extends JPanel implements ActionListener {
         checkCollision = new CheckCollision();
         handleCollision = new HandleCollision();
         entityCreation = new EntityCreation();
-        myActionListener = new MyActionListener(this, entityCreation);
+
         this.setFocusable(true);
         this.setPreferredSize(SCREEN_DIMENSIONS);
+        gameLifecycle = new GameLifecycle(this);
+        myActionListener = new MyActionListener(gameLifecycle);
         this.addKeyListener(myActionListener);
-        startGame();
-
+        gameLifecycle.startGame();
     }
 
-    public void startGame() {
-        running = true;
+    public void instantiateAllUIObjects() {
         spaceship = entityCreation.createSpaceship(SCREEN_WIDTH, SCREEN_HEIGHT);
         spaceshipBullets = new ArrayList<>();
         enemies = entityCreation.createEnemies();
         walls = entityCreation.createWalls(SCREEN_WIDTH, SCREEN_HEIGHT);
         enemyBullets = new ArrayList<>();
-        //randomEnemy = new Random();
         lifeCount = new LifeCount();
-        gamePlay = new GamePlay(SCREEN_WIDTH, SCREEN_HEIGHT);
+        textBox = new TextBox(SCREEN_WIDTH, SCREEN_HEIGHT);
         score = new Score(SCREEN_WIDTH, SCREEN_HEIGHT);
         movement = new Movement(spaceship, enemies, EntityCreation.getEnemyWidth(), SCREEN_WIDTH, myActionListener);
-        timer = new Timer(10, this);
-        timer.start();
     }
 
     public void paintComponent(Graphics g) {
@@ -92,25 +87,9 @@ public class GamePanel extends JPanel implements ActionListener {
             wall.draw(g);
         }
 
-        if (!running) {
-            gamePlay.draw(g, lifeCount.getLives() == 0);
+        if (!gameLifecycle.isRunning()) {
+            textBox.draw(g, lifeCount.getLives() == 0);
         }
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    private void handleSpaceshipHit() {
-        boolean gameOver = lifeCount.looseLife();
-        if (gameOver) {
-            gameOver();
-        }
-    }
-
-    private void gameOver() {
-        running = false;
-        timer.stop();
     }
 
     @Override
@@ -120,12 +99,12 @@ public class GamePanel extends JPanel implements ActionListener {
         float deltaSeconds = deltaMs / 1000f;
         prevWhen = when;
 
-        if (running) {
+        if (gameLifecycle.isRunning()) {
             timeUntilNextSpaceshipBullet += deltaSeconds;
             timeUntilNextEnemyBullet += deltaSeconds;
             timeUntilNextEnemyMovement += deltaSeconds;
 
-            if(timeUntilNextSpaceshipBullet >= delaySpaceshipBullets && myActionListener.isSpaceBarPressed()){
+            if (timeUntilNextSpaceshipBullet >= delaySpaceshipBullets && myActionListener.isSpaceBarPressed()) {
                 entityCreation.shootSpaceshipBullet(spaceship, spaceshipBullets);
                 timeUntilNextSpaceshipBullet = 0;
             }
@@ -156,18 +135,22 @@ public class GamePanel extends JPanel implements ActionListener {
                     score.increaseScore(); //TODO: Keep this here and not in HandleCollision?
                     handleCollision.collideSpaceshipBulletAndEnemy(spaceshipBullets, enemies, indexSpaceshipBulletEnemy);
                     if (enemies.isEmpty()) {
-                        gameOver();
+                        gameLifecycle.gameOver();
                     }
                 }
             }
 
             if (checkCollision.checkCollisionBetweenEnemyBulletsAndSpaceship(enemyBullets, spaceship)) {
                 enemyBullets.clear();
-                handleSpaceshipHit();
+                if (lifeCount.getLives() <= 0) {
+                    gameLifecycle.gameOver();
+                }
             }
 
             if (checkCollision.checkCollisionBetweenSpaceShipAndEnemies(spaceship, enemies)) {
-                handleSpaceshipHit();
+                if (lifeCount.getLives() <= 0) {
+                    gameLifecycle.gameOver();
+                }
             }
 
             IndexPair indexWallEnemyBullet = checkCollision.checkCollisionIndexesWallsAndBullets(walls, enemyBullets);

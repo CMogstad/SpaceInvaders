@@ -2,9 +2,9 @@ package entities;
 
 import java.awt.*;
 
-public class GamePlay extends Rectangle {
+public class TextBox extends Rectangle {
 
-    public GamePlay(int width, int height) {
+    public TextBox(int width, int height) {
         super(width, height);
     }
 

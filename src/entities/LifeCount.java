@@ -4,15 +4,9 @@ import java.awt.*;
 
 public class LifeCount {
     private int lives = 3;
-    private boolean gameOver = false;
 
-    public boolean looseLife() {
+    public void looseLife() {
         lives--;
-        if (lives == 0) {
-            gameOver = true;
-        }
-
-        return gameOver;
     }
 
     public void draw(Graphics g) {

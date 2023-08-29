@@ -9,27 +9,24 @@ public class MyActionListener extends KeyAdapter {
     private boolean rightKeyPressed = false;
     private boolean spaceBarPressed = false;
 
-    private GamePanel gamePanel;
-    private EntityCreation entityCreation;
+    private GameLifecycle gameLifecycle;
 
-    public MyActionListener(GamePanel gamePanel, EntityCreation entityCreation) {
-        this.gamePanel = gamePanel;
-        this.entityCreation = entityCreation;
+    public MyActionListener(GameLifecycle gameLifecycle) {
+        this.gameLifecycle = gameLifecycle;
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (gamePanel.isRunning()) {
+        if (gameLifecycle.isRunning()) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_RIGHT -> rightKeyPressed = true;
                 case KeyEvent.VK_LEFT -> leftKeyPressed = true;
                 case KeyEvent.VK_SPACE -> spaceBarPressed = true;
             }
         }
-
-        if (!gamePanel.isRunning()) {
+        if (!gameLifecycle.isRunning()) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-               gamePanel.startGame();
+                gameLifecycle.startGame();
             }
         }
     }
