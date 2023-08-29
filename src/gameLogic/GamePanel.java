@@ -280,18 +280,29 @@ public class GamePanel extends JPanel implements ActionListener {
                 handleCollisionBetweenWallsAndEnemyBullets(indexWallEnemyBullet);
             }
 
-            checkCollision.checkCollisionBetweenWallsAndBullets(walls, spaceshipBullets);
+            IndexPair indexWallSpaceshipBullet = checkCollision.checkCollisionBetweenWallsAndBullets(walls, spaceshipBullets);
+            if (indexWallSpaceshipBullet != null) {
+                handleCollisionBetweenWallsAndSpaceshipBullets(indexWallSpaceshipBullet);
+            }
         }
 
 
         repaint();
     }
 
-    public void handleCollisionBetweenWallsAndEnemyBullets(IndexPair indexWallEnemyBullet){
+    public void handleCollisionBetweenWallsAndEnemyBullets(IndexPair indexWallEnemyBullet) {
         walls.get(indexWallEnemyBullet.getFirst()).hit();
         enemyBullets.remove(enemyBullets.get(indexWallEnemyBullet.getSecond()));
         if (walls.get(indexWallEnemyBullet.getFirst()).getRemainingHits() == 0) {
             walls.remove(walls.get(indexWallEnemyBullet.getFirst()));
+        }
+    }
+
+    public void handleCollisionBetweenWallsAndSpaceshipBullets(IndexPair indexWallSpaceshipBullet) {
+        walls.get(indexWallSpaceshipBullet.getFirst()).hit();
+        spaceshipBullets.remove(spaceshipBullets.get(indexWallSpaceshipBullet.getSecond()));
+        if (walls.get(indexWallSpaceshipBullet.getFirst()).getRemainingHits() == 0) {
+            walls.remove(walls.get(indexWallSpaceshipBullet.getFirst()));
         }
     }
 
